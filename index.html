@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meowster AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            transition: background 0.3s, color 0.3s;
+        }
+        h1 { color: #ffcc00; }
+        #chat-container {
+            max-width: 400px;
+            margin: auto;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: fadeIn 1s ease-out;
+        }
+        #chat-box {
+            height: 250px;
+            overflow-y: auto;
+            border: 1px solid #444;
+            padding: 10px;
+            background: #222;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: fadeIn 1s ease-out;
+        }
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: fadeIn 1s ease-out;
+        }
+        .message .avatar {
+            font-size: 30px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .message .content {
+            max-width: 75%;
+        }
+        .user-message {
+            color: #ffcc00;
+            text-align: right;
+        }
+        .ai-message {
+            color: #66ff99;
+        }
+        .switch-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 15px;
+            animation: slideIn 0.5s ease-out;
+        }
+        .switch {
+            background: #444;
+            border-radius: 20px;
+            padding: 5px 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        .switch:hover {
+            transform: scale(1.1);
+        }
+        .light-mode {
+            background: #ffffff;
+            color: #000;
+        }
+        .light-mode #chat-container {
+            background: #f0f0f0;
+        }
+        .light-mode #chat-box {
+            background: #ffffff;
+            border: 1px solid #ccc;
+        }
+        #header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-out;
+        }
+        #header .avatar {
+            font-size: 40px;
+            transition: transform 0.3s ease;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #user-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            background: #333;
+            color: #fff;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        #emoji-button {
+            font-size: 24px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: #ffcc00;
+            transition: transform 0.3s ease;
+        }
+        #send-button {
+            background-color: #ffcc00;
+            color: #000;
+            font-size: 20px;
+            border-radius: 50%;
+            padding: 12px;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.3s ease;
+        }
+        #send-button:hover {
+            transform: scale(1.1);
+        }
+        #emoji-picker {
+            display: none;
+            position: absolute;
+            bottom: 70px;
+            left: 20px;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 20px;
+        }
+
+        /* Terms of Service Popup Styles */
+        #tos-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 9999;
+            animation: fadeIn 1s ease-out;
+        }
+        #tos-content {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            text-align: left;
+        }
+        #tos-content h2 {
+            color: #ffcc00;
+        }
+        #tos-content p {
+            margin-bottom: 20px;
+        }
+        #tos-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        #tos-buttons button {
+            background: #ffcc00;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+        #tos-buttons button:hover {
+            background: #ff9900;
+            transform: scale(1.1);
+        }
+
+        /* Keyframe Animations */
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            0% { opacity: 0; transform: translateX(20px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Light Switch Design */
+        .light-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            border-radius: 25px;
+            background-color: #ccc;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .light-switch:before {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 21px;
+            height: 21px;
+            border-radius: 50%;
+            background-color: #fff;
+            transition: transform 0.3s;
+        }
+
+        .light-switch.on {
+            background-color: #ffcc00;
+        }
+
+        .light-switch.on:before {
+            transform: translateX(25px);
+        }
+
+        /* Added moon and sun emojis inside the grey bubble */
+        .emoji-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        /* Search/Chat Mode switch */
+        .mode-switch-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .mode-switch {
+            background: #444;
+            border-radius: 20px;
+            padding: 5px 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .mode-switch:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <span class="avatar">🐱</span>
+        <div>Meowster</div>
+    </div>
+
+    <div class="switch-container">
+        <div class="emoji-container">
+            <span>🌙</span>
+            <div class="switch" onclick="toggleLightDark()"> 
+                <div class="light-switch" id="light-switch"></div>
+            </div>
+            <span>🌞</span>
+        </div>
+        <div class="mode-switch-container">
+            <div class="mode-switch" onclick="toggleMode()"> 
+                <span>💬</span>
+                <div class="light-switch" id="mode-switch"></div>
+                <span>🔍</span>
+            </div>
+        </div>
+    </div>
+
+    <h1>Meowster AI</h1>
+    <div id="chat-container">
+        <div id="chat-box"></div>
+        <div class="input-container">
+            <button id="emoji-button" onclick="toggleEmojiPicker()">😊</button>
+            <input type="text" id="user-input" placeholder="Type a message...">
+            <button id="send-button" onclick="sendMessage()"➡️</button>
+        </div>
+    </div>
+
+    <div id="emoji-picker">
+        <span onclick="insertEmoji('😺')">😺</span>
+        <span onclick="insertEmoji('😻')">😻</span>
+        <span onclick="insertEmoji('🙀')">🙀</span>
+        <span onclick="insertEmoji('😸')">😸</span>
+        <span onclick="insertEmoji('😽')">😽</span>
+    </div>
+
+    <!-- Terms of Service Popup -->
+    <div id="tos-popup">
+        <div id="tos-content">
+            <h2>Terms of Service</h2>
+            <p>By clicking "I Agree", you accept the privacy policy and allow Meowster to collect your data. You can view the privacy policy by scrolling to the bottom and pressing 'PRIVACY POLICY'.</p>
+            <p>Would you like to enable personalized responses?</p>
+            <div id="tos-buttons">
+                <button onclick="acceptTOS()">✅ I Agree</button>
+                <button onclick="declineTOS()">❌ I Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isSearchMode = false;
+
+        function toggleLightDark() {
+            const body = document.body;
+            const switchElement = document.getElementById('light-switch');
+            body.classList.toggle('light-mode');
+            switchElement.classList.toggle('on');
+        }
+
+        function toggleMode() {
+            isSearchMode = !isSearchMode;
+            const modeSwitch = document.getElementById('mode-switch');
+            modeSwitch.classList.toggle('on');
+            // Add more functionality for search/chat mode here
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('user-input').value;
+            if (input) {
+                addMessage(input, 'user');
+                document.getElementById('user-input').value = '';
+                setTimeout(() => addMessage('Response from Meowster AI', 'ai'), 500);
+            }
+        }
+
+        function addMessage(message, sender) {
+            const chatBox = document.getElementById('chat-box');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
+            messageDiv.innerHTML = 
+                <span class="avatar">${sender === 'user' ? '👤' : '🐱'}</span>
+                <div class="content">${message}</div>
+            ;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function toggleEmojiPicker() {
+            document.getElementById('emoji-picker').classList.toggle('show');
+        }
+
+        function insertEmoji(emoji) {
+            document.getElementById('user-input').value += emoji;
+            document.getElementById('emoji-picker').classList.remove('show');
+        }
+
+        function acceptTOS() {
+            document.getElementById('tos-popup').style.display = 'none';
+        }
+
+        function declineTOS() {
+            document.getElementById('tos-popup').style.display = 'none';
+            alert("You need to accept the terms to use this artificial intelligence.");
+        }
+    </script>
+</body>
+</html>
